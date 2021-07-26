@@ -2,6 +2,7 @@ package MyClientServer;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Logger;
 
 
@@ -57,6 +58,8 @@ public class FileSender implements Runnable {
 
 //        String fileName = is.readUTF();
         //String filePath = filename;
+//        SplitFiles fileSpliter = new SplitFiles(5, filepath);
+//        List<File> fileList = fileSpliter.splitFile(filepath);
 
         fileToSend = new FileInputStream(filepath);
 

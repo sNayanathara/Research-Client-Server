@@ -7,11 +7,12 @@ import java.util.List;
 public class SplitFiles {
 
     private int chunkSizeInMB;
+    private String filePath_ofFile_toSend;
 
-    public SplitFiles(int chunkSizeInMB) {
+    public SplitFiles(int chunkSizeInMB, String filePath_ofFile_toSend) {
         this.chunkSizeInMB = chunkSizeInMB;
+        this.filePath_ofFile_toSend = filePath_ofFile_toSend;
     }
-
 
     public String getFileNameDetails(String filePath_ofFile_toSend) {
         String fileNameWithExtension;

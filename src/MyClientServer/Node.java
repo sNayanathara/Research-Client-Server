@@ -1,5 +1,6 @@
 package MyClientServer;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -20,22 +21,23 @@ public class Node implements Runnable {
 
     private NodeDetails nodeDetails;
     private ArrayList<NodeDetails> nodesList = new ArrayList<>();
+    //private int fileCount;
 
     public Node(NodeDetails nodeDetails) {
         this.nodeDetails = nodeDetails;
     }
 
     public void addNodesToNodeList() {  //a temp function to add the nodes to the ArrayList -> nodeList
-        nodesList.add(new NodeDetails("localhost", 9990));
+        //nodesList.add(new NodeDetails("localhost", 9990));
         nodesList.add(new NodeDetails("localhost", 9991));
         nodesList.add(new NodeDetails("localhost", 9992));
         nodesList.add(new NodeDetails("localhost", 9993));
         nodesList.add(new NodeDetails("localhost", 9994));
         nodesList.add(new NodeDetails("localhost", 9995));
-        nodesList.add(new NodeDetails("localhost", 9996));
-        nodesList.add(new NodeDetails("localhost", 9997));
-        nodesList.add(new NodeDetails("localhost", 9998));
-        nodesList.add(new NodeDetails("localhost", 9999));
+//        nodesList.add(new NodeDetails("localhost", 9996));
+//        nodesList.add(new NodeDetails("localhost", 9997));
+//        nodesList.add(new NodeDetails("localhost", 9998));
+//        nodesList.add(new NodeDetails("localhost", 9999));
         //System.out.println(nodesList);
     }
     public void run() {
@@ -54,6 +56,7 @@ public class Node implements Runnable {
                 String command = st.nextToken();
 
                 System.out.println(command);
+
                 if (command.equals("FETCH")) {
 //                  logger.log(Level.INFO, "Msg received");
                     String reqFilename = st.nextToken();
@@ -64,15 +67,20 @@ public class Node implements Runnable {
                     fileSender.getFileFromName(reqFilename);
                     Thread fileSenderThread = new Thread(fileSender);
                     fileSenderThread.start();
+
+                } else if (command.equals("SEND_REQUEST")) {
+                    String fileToBeAccepted = st.nextToken();
+
                 } else if (command.equals("SEND")) {
                     String sendingFilepath = st.nextToken();
-                    int receiverPort = Integer.parseInt(st.nextToken());
+                    int senderPort = Integer.parseInt(st.nextToken());
 //                    logger.log(Level.INFO, reqFilename + " " + receiverPort);
-                    System.out.println(sendingFilepath + " " + receiverPort);
-                    FileSender fileSender = new FileSender(receiverPort);
-                    fileSender.getFileFromPath(sendingFilepath);
-                    Thread fileSenderThread = new Thread(fileSender);
-                    fileSenderThread.start();
+                    System.out.println(sendingFilepath + " " + senderPort);
+                    FileReceiver fileReceiver = new FileReceiver(senderPort);
+                    fileReceiver.setFilepathFromFilepath(sendingFilepath);
+                    Thread fileReceiverThread = new Thread(fileReceiver);
+                    fileReceiverThread.start();
+
                 } else if (command.equals("UNROK")) {
                     int status = Integer.parseInt(st.nextToken());
                     if (status == 0) {
@@ -112,16 +120,37 @@ public class Node implements Runnable {
         }
     }
 
+    public void fileSendRequestMsg(String filePathOfSendingFile) throws UnknownHostException {
+        SplitFiles fileSpliter = new SplitFiles(10,filePathOfSendingFile);
+        List<File> fileList = fileSpliter.splitFile(filePathOfSendingFile);
+        //int fileCount = fileList.size();
+
+        String msg;
+        int count = 0;
+        for(File file: fileList) {
+            String fileNameofChunk = file.getName();
+            msg = "SEND_REQUEST " + fileNameofChunk;
+            InetAddress bs_address = InetAddress.getByName(nodesList.get(count).getIp());
+            sendMsgViaSocket(sock, bs_address, nodesList.get(count).getPort(), msg);
+            count++;
+        }
+    }
+
+//    public void acceptRequestMsg(String fileToBeAccepted) {
+//        String msg =
+//    }
+
     public void sendFile(Node node, String filepath) {
         String msg = "SEND " + filepath + " " + 9997;
         try {
-            FileReceiver fileReceiver = new FileReceiver(9997);
-            fileReceiver.setFilepathFromFilepath(filepath);
-            Thread fileReceiverThread = new Thread(fileReceiver);
-            fileReceiverThread.start();
             InetAddress bs_address = InetAddress.getByName(node.nodeDetails.getIp());
             sendMsgViaSocket(sock, bs_address, node.nodeDetails.getPort(), msg);
-        } catch (UnknownHostException e) {
+
+            FileSender fileSender = new FileSender(9997);
+            fileSender.getFileFromPath(filepath);
+            Thread fileSenderThread = new Thread(fileSender);
+            fileSenderThread.start();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

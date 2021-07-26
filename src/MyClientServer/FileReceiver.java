@@ -41,6 +41,7 @@ public class FileReceiver implements Runnable {
     public String setFilepathFromFilepath(String filePath) {
 
         String fileName = filePath.substring(filePath.lastIndexOf("/"));
+        //System.out.println(fileName);
         String dir = "F:\\CopyFiles\\";
 
         filepath = dir + fileName;
