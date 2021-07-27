@@ -4,16 +4,26 @@ import java.util.ArrayList;
 
 public class NodeDetails {
 
+    //private int nodeIndex;
     private String ip;
     private int port;
     private int listeningPort;
     //private ArrayList<NodeDetails> otherNodeDetails = new ArrayList();
 
     public NodeDetails(String ip, int port, int listeningPort) {
+        //this.nodeIndex = nodeIndex;
         this.ip = ip;
         this.port = port;
         this.listeningPort = listeningPort;
     }
+
+//    public int getNodeIndex() {
+//        return nodeIndex;
+//    }
+//
+//    public void setNodeIndex(int nodeIndex) {
+//        this.nodeIndex = nodeIndex;
+//    }
 
     public String getIp() {
         return ip;

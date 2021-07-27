@@ -24,6 +24,7 @@ public class Test {
         Node node4 = new Node(nodeDetails4);
         Node node5 = new Node(nodeDetails5);
         Node node6 = new Node(nodeDetails6);
+        Node node7 = new Node(nodeDetails7);
 
         Thread thread1 = new Thread(node1);
         Thread thread2 = new Thread(node2);
@@ -31,6 +32,7 @@ public class Test {
         Thread thread4 = new Thread(node4);
         Thread thread5 = new Thread(node5);
         Thread thread6 = new Thread(node6);
+        Thread thread7 = new Thread(node7);
 
         thread1.start();
         thread2.start();
@@ -38,8 +40,10 @@ public class Test {
         thread4.start();
         thread5.start();
         thread6.start();
+        thread7.start();
         //node1.fetchFile(node2, "Hi.pdf");
         node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
+        node1.fileFetchRequestMsg("marsland.ml-alg-perspect.09.pdf");
 
     }
 }

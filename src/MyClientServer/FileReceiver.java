@@ -31,9 +31,15 @@ public class FileReceiver implements Runnable {
         out.close();
    }
 
-   public String setFilepathFromName(String filename) {
+   public String setFilepathFromName(String filename, int folderNumber) {
         String dir = "F:\\CopyFiles\\RecievedFiles\\";
-        filepath = dir + filename;
+        String folderName = "node_" + folderNumber;
+        String folder = dir + folderName;
+        File directory = new File(folder);
+        if(! directory.exists()) {
+            directory.mkdir();
+        }
+        filepath = directory + "/" + filename;
 
        return filepath;
    }
