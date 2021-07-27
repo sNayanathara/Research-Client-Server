@@ -56,12 +56,14 @@ public class FileSender implements Runnable {
 
     public FileInputStream getFileFromPath(String filepath) throws IOException {
 
-//        String fileName = is.readUTF();
-        //String filePath = filename;
-//        SplitFiles fileSpliter = new SplitFiles(5, filepath);
-//        List<File> fileList = fileSpliter.splitFile(filepath);
-
         fileToSend = new FileInputStream(filepath);
+
+        return fileToSend;
+    }
+
+    public FileInputStream getFileToSend(File file) throws FileNotFoundException {
+
+        fileToSend = new FileInputStream(file);
 
         return fileToSend;
     }
