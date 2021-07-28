@@ -60,33 +60,63 @@ public class Node implements Runnable {
 
                 //System.out.println(command);
 
-                if (command.equals("FETCH")) {
-//                  logger.log(Level.INFO, "Msg received");
-                    String reqFilename = st.nextToken();
-                    int receiverPort = Integer.parseInt(st.nextToken());
-//                  logger.log(Level.INFO, reqFilename + " " + receiverPort);
-                    System.out.println(reqFilename + " " + receiverPort);
-                    FileSender fileSender = new FileSender(receiverPort);
-                    fileSender.getFileFromName(reqFilename);
-                    Thread fileSenderThread = new Thread(fileSender);
-                    fileSenderThread.start();
+//                if (command.equals("FETCH")) {
+////                  logger.log(Level.INFO, "Msg received");
+//                    String reqFilename = st.nextToken();
+//                    int receiverPort = Integer.parseInt(st.nextToken());
+////                  logger.log(Level.INFO, reqFilename + " " + receiverPort);
+//                    System.out.println(reqFilename + " " + receiverPort);
+//                    FileSender fileSender = new FileSender(receiverPort);
+//                    fileSender.getFileFromName(reqFilename);
+//                    Thread fileSenderThread = new Thread(fileSender);
+//                    fileSenderThread.start();
+//
+//                } else
+               if (command.equals("FETCH_REQUEST")) {
 
-                } else if (command.equals("FETCH_REQUEST")) {
+                   System.out.println("FETCH_REQUEST");
 
+                    String fileChunkName = st.nextToken();
                     String seekingFileName = st.nextToken();
                     int nodeNumber = Integer.parseInt(st.nextToken());
 
-                    fetchFileAvailabilityMsg(seekingFileName, nodeNumber, incoming);
+                    fetchFileAvailabilityMsg(seekingFileName, fileChunkName, nodeNumber, incoming);
 
-                }else if (command.equals("FETCH_AVAILABILE")) {
+                }else if (command.equals("FETCH_AVAILABLE")) {
 
+                   System.out.println("FETCH_AVAILABLE");
+
+                   String seekingFileName = st.nextToken();
+                   String fileChunkName = st.nextToken();
+                   //int fileChunkNumber = Integer.parseInt(st.nextToken());
+                   //int listeningPort = Integer.parseInt(st.nextToken());
+                   int nodeNumber = Integer.parseInt(st.nextToken());
+
+                   fetchFile(seekingFileName, fileChunkName, nodeNumber, incoming);
+
+                } else if (command.equals("FETCH_UNAVAILABLE")) {
+
+                   System.out.println("FETCH_UNAVAILABLE");
+
+                   String seekingFileName = st.nextToken();
+                   String fileChunkName = st.nextToken();
+                   System.out.println("Fetch for " + seekingFileName + "not found -> " + fileChunkName);
+
+                }else if (command.equals("FETCH")) {
+
+                   System.out.println("FETCH");
+
+                    int listeningPort = Integer.parseInt(st.nextToken());
                     String seekingFileName = st.nextToken();
                     String fileChunkName = st.nextToken();
-                    int fileChunkNumber = Integer.parseInt(st.nextToken());
-                    int listeningPort = Integer.parseInt(st.nextToken());
                     int nodeNumber = Integer.parseInt(st.nextToken());
 
-                }else if (command.equals("FETCH_UNAVAILABILE")) {
+                    String fileChunkPath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber + "/" + fileChunkName;
+
+                    FileSender fileSender = new FileSender(listeningPort);
+                    fileSender.getFileFromPath(fileChunkPath);
+                    Thread fileSenderThread = new Thread(fileSender);
+                    fileSenderThread.start();
 
                 } else if (command.equals("SEND_REQUEST")) {
                     String fileToBeAccepted = st.nextToken();
@@ -135,15 +165,6 @@ public class Node implements Runnable {
         }
     }
 
-//    public void fetchFiles(HashMap<Node, String> filedata) {
-//        String msg;
-//        Iterator it = filedata.entrySet().iterator();
-//        while (it.hasNext()) {
-//            Map.Entry pair = (Map.Entry)it.next();
-//            msg = "FETCH " + pair.getValue() + " " + ;
-//
-//        }
-//    }
 
 //    public void fetchFile(Node node, String filename) {
 //        String msg = "FETCH " + filename + " " + 9997;
@@ -223,50 +244,124 @@ public class Node implements Runnable {
             logger.log(Level.INFO, e.toString());
         }
     }
+    public HashMap<NodeDetails, String> getFileData(String seekingFile) {
+        HashMap<NodeDetails, String> filedata = new HashMap<>();
+        System.out.println("inside");
+        //System.out.println(nodesList.get(1));
 
-    public void fileFetchRequestMsg(String fetchFileName) throws UnknownHostException {
-        int count = 1;
-        for (NodeDetails nodes: nodesList) {
-            String msg = "FETCH_REQUEST " + fetchFileName + " " + count;
-            InetAddress bs_address = InetAddress.getByName(nodes.getIp());
-            sendMsgViaSocket(sock, bs_address, nodes.getPort(), msg);
-            count ++;
-        }
+        filedata.put(nodesList.get(1), "marsland.ml-alg-perspect.09.part_0.pdf");
+        filedata.put(nodesList.get(2), "marsland.ml-alg-perspect.09.part_1.pdf");
+        filedata.put(nodesList.get(3), "marsland.ml-alg-perspect.09.part_2.pdf");
+        filedata.put(nodesList.get(4), "marsland.ml-alg-perspect.09.part_3.pdf");
+        filedata.put(nodesList.get(5), "marsland.ml-alg-perspect.09.part_4.pdf");
+
+        //System.out.println(filedata);
+
+        return filedata;
+
     }
 
-    public void fetchFileAvailabilityMsg(String seekingFileName, int nodeNumber, DatagramPacket incoming) throws UnknownHostException {
+    public void fetchFileMsg(String seekingFile) throws UnknownHostException {
+        HashMap<NodeDetails, String> filedata = getFileData(seekingFile);
 
         String msg;
-        String folderPath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber;
-        String seekingFileWithoutExtension = seekingFileName.substring(0, seekingFileName.lastIndexOf("."));
-
-        File dir = new File(folderPath);
-        File[] directoryListing = dir.listFiles();
-        if (directoryListing != null) {
-            for (File child : directoryListing) {
-                String childName = child.getName();
-                int fileNumber = Integer.parseInt(childName.substring(childName.lastIndexOf("_"), childName.lastIndexOf(".")));
-                if (childName.contains(seekingFileWithoutExtension)) {
-                    msg = "FETCH_AVAILABLE " + seekingFileName + " " + childName + " " + fileNumber + " " + nodesList.get(nodeNumber).getListeningPort() + " " + nodeNumber;
-                } else {
-                    msg = "FETCH_UNAVAILABLE " + nodeNumber;
-                }
-                InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
-                sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
-            }
-        } else {
-            System.out.println("Empty Directory -> " + nodeNumber);
+        int count = 1;
+        Iterator it = filedata.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            msg = "FETCH_REQUEST " + pair.getValue() + " " + seekingFile + " " + count;
+            NodeDetails node = (NodeDetails) pair.getKey();
+            InetAddress bs_address = InetAddress.getByName(node.getIp());
+            sendMsgViaSocket(sock, bs_address, node.getPort(), msg);
+            count++;
         }
     }
 
-    public void fetchFile(String seekingFileName, String fileChunkName, int fileChunkNumber, int listeningPort, int nodeNumber, DatagramPacket incoming) {
-        List<File> fetchedFiles = new ArrayList<>();
-        String folderPath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber;  //////////////////////////////////////////////////
+    public void fetchFileAvailabilityMsg(String seekingFileName, String fileChunkName, int nodeNumber, DatagramPacket incoming) throws UnknownHostException {
+        String msg = "";
+        //String fileChunkPath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber + "/" + fileChunkName;
+        String dirPath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber;
+        File dir = new File(dirPath);
+        File[] directoryListing = dir.listFiles();
 
-        String msg = "FETCH " + listeningPort + " " + seekingFileName;
+        if (directoryListing != null) {
+            for (File file : directoryListing) {
+                String fileName = file.getName();
+                System.out.println("seekin: " +fileName);
+                System.out.println("chunk: " + fileChunkName);
+                if (fileName.equals(fileChunkName)) {
+                    msg = "FETCH_AVAILABLE " + seekingFileName + " " + fileChunkName + " " + nodeNumber;
+                    break;
+                }
+            }
+        }
+//        File file = new File(fileChunkPath);
+//        if(file.exists()) {
+//            msg = "FETCH_AVAILABLE " + seekingFileName + " " + fileChunkName + " " + nodeNumber;
+//        } else {
+//            msg = "FETCH_UNAVAILABLE " + seekingFileName + " " + fileChunkName;
+//        }
+        InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
+        sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
+    }
 
-        File file = new File(folderPath + "/" + fileChunkName);
-        fetchedFiles.add(fileChunkNumber, file);
+
+//    public void fileFetchRequestMsg(String fetchFileName) throws UnknownHostException {
+//        int count = 1;
+//
+//        for (NodeDetails nodes: nodesList) {
+//            String msg = "FETCH_REQUEST " + fetchFileName + " " + count;
+//            InetAddress bs_address = InetAddress.getByName(nodes.getIp());
+//            sendMsgViaSocket(sock, bs_address, nodes.getPort(), msg);
+//            count ++;
+//        }
+//    }
+
+//    public void fetchFileAvailabilityMsg(String seekingFileName, String fileChunkName, int nodeNumber, DatagramPacket incoming) throws UnknownHostException {
+//
+//        String msg;
+//        String folderPath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber;
+//        String seekingFileWithoutExtension = seekingFileName.substring(0, seekingFileName.lastIndexOf("."));
+//
+//        File dir = new File(folderPath);
+//        File[] directoryListing = dir.listFiles();
+//        if (directoryListing != null) {
+//            for (File child : directoryListing) {
+//                String childName = child.getName();
+//                int fileNumber = Integer.parseInt(childName.substring(childName.lastIndexOf("_"), childName.lastIndexOf(".")));
+//                if (childName.contains(seekingFileWithoutExtension)) {
+//                    msg = "FETCH_AVAILABLE " + seekingFileName + " " + childName + " " + fileNumber + " " + nodeNumber;
+//                } else {
+//                    msg = "FETCH_UNAVAILABLE " + nodeNumber;
+//                }
+//                InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
+//                sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
+//            }
+//        } else {
+//            System.out.println("Empty Directory -> " + nodeNumber);
+//        }
+//    }
+
+    public void fetchFile(String seekingFileName, String fileChunkName, int nodeNumber, DatagramPacket incoming) throws UnknownHostException {
+        //List<File> fetchedFiles = new ArrayList<>();
+       // String filePath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber + fileChunkName;  //////////////////////////////////////////////////
+        int listeningPort = nodesList.get(0).getListeningPort();
+        HashMap<NodeDetails, String> filedata = getFileData(seekingFileName);
+        int numberOfFileChunks = filedata.size();
+        int fileIndex = nodeNumber; //file order eka hoyagnna use kre.methana node nunmber eka gattata wenama file index ekak wge dila kranna ona
+
+        String msg = "FETCH " + listeningPort + " " + seekingFileName + " " + fileChunkName + " " + nodeNumber;
+        InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
+        sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
+
+       // File file = new File(folderPath + "/" + fileChunkName);
+       // fetchedFiles.add(fileChunkNumber, file);
+
+        FileReceiver fileReceiver = new FileReceiver(listeningPort);
+        fileReceiver.setFilepathFromSeekingFile(seekingFileName, fileChunkName, fileIndex, numberOfFileChunks);
+        Thread fileReceiverThread = new Thread(fileReceiver);
+        fileReceiverThread.start();
+
 
     }
 }

@@ -3,6 +3,8 @@ package MyClientServer;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class FileReceiver implements Runnable {
@@ -44,15 +46,21 @@ public class FileReceiver implements Runnable {
        return filepath;
    }
 
-    public String setFilepathFromFilepath(String filePath) {
+    public String setFilepathFromSeekingFile(String fileName, String fileChunk, int fileIndex, int totalNumberOfFiles) {
 
-        String fileName = filePath.substring(filePath.lastIndexOf("/"));
-        //System.out.println(fileName);
+        List<File> fetchedFiles = new ArrayList<>();
+        File file = new File(fileChunk);
+        fetchedFiles.add(fileIndex, file);
+        int numberOfFilesReceived = fetchedFiles.size();
         String dir = "F:\\CopyFiles\\";
 
-        filepath = dir + fileName;
+        if (numberOfFilesReceived == totalNumberOfFiles) {
+            filepath = dir + fileName;
+        }
 
-        return filepath;
+        return  filepath;
+
+
     }
 
     @Override

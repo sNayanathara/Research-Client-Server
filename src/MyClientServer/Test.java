@@ -3,6 +3,7 @@ package MyClientServer;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 public class Test {
 
@@ -42,8 +43,9 @@ public class Test {
         thread6.start();
         thread7.start();
         //node1.fetchFile(node2, "Hi.pdf");
-        node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
-        node1.fileFetchRequestMsg("marsland.ml-alg-perspect.09.pdf");
+        //node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
+        node1.addNodesToNodeList();
+        node1.fetchFileMsg("marsland.ml-alg-perspect.09.pdf");
 
     }
 }
