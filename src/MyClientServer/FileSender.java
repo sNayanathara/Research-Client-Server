@@ -6,21 +6,23 @@ import java.util.List;
 import java.util.logging.Logger;
 
 
-public class FileSender implements Runnable {
+public class FileSender {
 
     private int port;
     FileInputStream fileToSend;
-    private Logger logger = Logger.getLogger(FileSender.class.getName());
+    //private Logger logger = Logger.getLogger(FileSender.class.getName());
    // private String filename;
 
-    public FileSender(int port) {
-        //this.filename = filename;
-        this.port = port;
-    }
+//    public FileSender(int port) {
+//        //this.filename = filename;
+//        this.port = port;
+//    }
 
-    public void fetch_and_SendFile(Socket socket, FileInputStream fileInputStream) throws IOException {
+    public void fetch_and_SendFile(Socket socket) throws IOException {
         OutputStream os = null;
+        FileInputStream fileInputStream = fileToSend;
         try {
+            System.out.println("Inside sender");
             os = socket.getOutputStream();
             int bytesRead;
             byte[] buffer = new byte[4096];
@@ -47,7 +49,6 @@ public class FileSender implements Runnable {
     public FileInputStream getFileFromName(String filename) throws IOException {
         String dir = "F:\\";
 
-//        String fileName = is.readUTF();
         String filePath = dir + filename;
         fileToSend = new FileInputStream(filePath);
 
@@ -69,21 +70,21 @@ public class FileSender implements Runnable {
     }
 
 
-    @Override
-    public void run() {
-        try (Socket socket = new Socket("localhost", port)) {
-            InputStream inputStream = socket.getInputStream();
-            DataInputStream dataInputStream = new DataInputStream(inputStream);
-           // FileInputStream fileToSend = getFileToSend(dataInputStream);
-
-
-            fetch_and_SendFile(socket, fileToSend);
-
-            dataInputStream.close();
-            //dataInputStream.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+ //   @Override
+//    public void run() {
+//        try (Socket socket = new Socket("localhost", port)) {
+//            InputStream inputStream = socket.getInputStream();
+//            DataInputStream dataInputStream = new DataInputStream(inputStream);
+//           // FileInputStream fileToSend = getFileToSend(dataInputStream);
+//
+//
+//            fetch_and_SendFile(socket, fileToSend);
+//
+//            dataInputStream.close();
+//            //dataInputStream.close();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//    }
 
 }

@@ -7,15 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class FileReceiver implements Runnable {
+public class FileReceiver {
 
     int port;
     String filepath;
+    ServerSocket socket;
+    static File[] fetchedFiles = new File[50];
 
-    public FileReceiver(int port) {
-        //this.fileName = fileName;
-        this.port = port;
+    public FileReceiver(ServerSocket socket) {
+        this.socket = socket;
     }
+
+//    public FileReceiver(int port) {
+//        //this.fileName = fileName;
+//        this.port = port;
+//    }
 
     public  void getFile(ServerSocket socket) throws IOException {
 
@@ -31,45 +37,43 @@ public class FileReceiver implements Runnable {
             out.write(buffer,0,bytesRead);
         }
         out.close();
+        socket.close();
    }
 
-   public String setFilepathFromName(String filename, int folderNumber) {
+   public String setFilepathFromName(String filename, String nodeUserName) {
         String dir = "F:\\CopyFiles\\RecievedFiles\\";
-        String folderName = "node_" + folderNumber;
+        String folderName = nodeUserName;
         String folder = dir + folderName;
         File directory = new File(folder);
         if(! directory.exists()) {
             directory.mkdir();
         }
-        filepath = directory + "/" + filename;
+        filepath = directory + "\\" + filename;
+        System.out.println(filepath);
 
        return filepath;
    }
 
-    public String setFilepathFromSeekingFile(String fileName, String fileChunk, int fileIndex, int totalNumberOfFiles) {
+    public String setFilepathFromSeekingFile(String fileName) {
 
-        List<File> fetchedFiles = new ArrayList<>();
-        File file = new File(fileChunk);
-        fetchedFiles.add(fileIndex, file);
-        int numberOfFilesReceived = fetchedFiles.size();
         String dir = "F:\\CopyFiles\\";
 
-        if (numberOfFilesReceived == totalNumberOfFiles) {
-            filepath = dir + fileName;
-        }
+        filepath = dir + fileName;
+        System.out.println("Saving file to -> " + filepath);
 
         return  filepath;
 
 
     }
 
-    @Override
-    public void run() {
-        try {
-            ServerSocket socket = new ServerSocket(port);
-            getFile(socket);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    @Override
+//    public void run() {
+//        try {
+////            System.out.println(port);
+//            ServerSocket socket = new ServerSocket(port);
+//            getFile(socket);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
