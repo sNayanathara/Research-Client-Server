@@ -9,16 +9,11 @@ public class FilePasser implements Runnable {
     int port;
     String fileChunkPath;
     File file;
-//    String seekingFileName;
-//    String nodeUsername;
-
 
     public FilePasser(String task, int fetcherListeningPort, String fileChunkPath) {
         this.task = task;
         this.port = fetcherListeningPort;
         this.fileChunkPath = fileChunkPath;
-//        this.seekingFileName = seekingFileName;
-//        this.nodeUsername = nodeUsername;
     }
 
     public FilePasser(String task, int listeningPort, File file) {
@@ -52,13 +47,7 @@ public class FilePasser implements Runnable {
     @Override
     public void run() {
         try (Socket socket = new Socket("localhost", port)) {
-            InputStream inputStream = socket.getInputStream();
-            DataInputStream dataInputStream = new DataInputStream(inputStream);
-            // FileInputStream fileToSend = getFileToSend(dataInputStream);
             setTask(socket);
-
-            dataInputStream.close();
-
         }catch (Exception e){
             e.printStackTrace();
         }

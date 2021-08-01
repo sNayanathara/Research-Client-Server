@@ -1,6 +1,8 @@
 package MyClientServer;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -17,7 +19,6 @@ public class FileFetcher implements Runnable {
     DatagramSocket sock;
     String sendingFileName;
     String nodeUsername;
-
 
     public FileFetcher(String task, int port, ArrayList<NodeDetails> nodesList, HashMap<String, String> filedata, String seekingFile, DatagramSocket sock) {
         this.task = task;
@@ -47,13 +48,32 @@ public class FileFetcher implements Runnable {
 
     private void sendFileChunksToNodes(ServerSocket socket) throws IOException {
         System.out.println("sendFileChunksToNodes");
-        FileReceiver fileReceiver = new FileReceiver(socket);
+        FileReceiver fileReceiver = new FileReceiver();
         fileReceiver.setFilepathFromName(sendingFileName, nodeUsername );
         fileReceiver.getFile(socket);
     }
 
+    public String setFilepathFromSeekingFile(String fileName) {
+
+        String dir = "F:\\CopyFiles\\";
+        String filepath;
+
+        filepath = dir + fileName;
+        System.out.println("Saving file to -> " + filepath);
+
+        return  filepath;
+
+    }
+
+
     public void sendFetchRequestToNodes(ServerSocket socket) throws IOException {
+        System.out.println("Open");
         System.out.println("Nodelist size " +nodesList.size());
+        System.out.println("sock2 " +sock);
+
+        String fileOutPath = setFilepathFromSeekingFile(seekingFile);
+        OutputStream outputFile = new FileOutputStream(fileOutPath);
+
         for (int i = 1; i< nodesList.size(); i++) {
             String nodeUsername = nodesList.get(i).getUsername();
             int nodePort = nodesList.get(i).getPort();
@@ -71,12 +91,13 @@ public class FileFetcher implements Runnable {
             InetAddress bs_address = InetAddress.getByName(nodeIP);
             Node.sendMsgViaSocket(sock, bs_address, nodePort, msg);
 
-            FileReceiver fileReceiver = new FileReceiver(socket);
-            fileReceiver.setFilepathFromSeekingFile(seekingFile);
-            fileReceiver.getFile(socket);
+            FileReceiver fileReceiver = new FileReceiver();
+            //fileReceiver.setFilepathFromSeekingFile(seekingFile);
+            fileReceiver.getFileToMerge(socket, outputFile);
 
-            socket.close();
+            // socket.close();
         }
+        outputFile.close();
     }
 
     @Override

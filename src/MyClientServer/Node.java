@@ -3,15 +3,11 @@ package MyClientServer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.*;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-//Why utility class
 public class Node implements Runnable {
 
     private Logger logger = LogManager.getLogManager().getLogger("a");
@@ -21,8 +17,9 @@ public class Node implements Runnable {
     private ArrayList<NodeDetails> nodesList = new ArrayList<>();
     private List<File> fileList;
 
-    public Node(NodeDetails nodeDetails) {
+    public Node(NodeDetails nodeDetails) throws SocketException {
         this.nodeDetails = nodeDetails;
+        sock = new DatagramSocket(nodeDetails.getPort());
     }
 
     public void addNodesToNodeList() {  //a temp function to add the nodes to the ArrayList -> nodeList
@@ -40,9 +37,8 @@ public class Node implements Runnable {
 
     }
     public void run() {
-        String s;
         try {
-            sock = new DatagramSocket(nodeDetails.getPort());
+            System.out.println("sock0 " +sock);
 
             while(true) {
                 byte[] buffer = new byte[65536];
@@ -64,7 +60,6 @@ public class Node implements Runnable {
                    String task = "FETCH";
 
                    String fileChunkPath = "F:\\CopyFiles\\RecievedFiles\\" + nodeUsername + "\\" + fileChunkName;
-                    //System.out.println("Node " + nodeNumber+ "->" +nodesList.get(nodeNumber).getPort());
 
                    FilePasser filePasser = new FilePasser(task, receiverListeningPort, fileChunkPath);
                    Thread filePasserThread = new Thread(filePasser);
@@ -102,12 +97,6 @@ public class Node implements Runnable {
                     FileFetcher fileFetcher = new FileFetcher(task, senderPort, sendingFileName, nodeUsername);
                     Thread fileFetcherThread = new Thread(fileFetcher);
                     fileFetcherThread.start();
-
-//                    FileReceiver fileReceiver = new FileReceiver(senderPort);
-//                    fileReceiver.setFilepathFromName(sendingFileName, nodeNumber );
-//                    Thread fileReceiverThread = new Thread(fileReceiver);
-//                    fileReceiverThread.start();
-
                 }
             }
         } catch(IOException e) {
@@ -125,7 +114,7 @@ public class Node implements Runnable {
         for(File file: fileList) {
             String fileNameofChunk = file.getName();
             String nodeUsername = nodesList.get(count).getUsername();
-            msg = "SEND_REQUEST " + fileNameofChunk + " " + count;    //thamangema listening pot eka hoyagnna
+            msg = "SEND_REQUEST " + fileNameofChunk + " " + count;
             InetAddress bs_address = InetAddress.getByName(nodesList.get(count).getIp());
             sendMsgViaSocket(sock, bs_address, nodesList.get(count).getPort(), msg);
             count++;
@@ -151,42 +140,31 @@ public class Node implements Runnable {
             if (currentFileName.equals(fileName)) {
                 InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
                 sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
-
-//                FileSender fileSender = new FileSender(listeningPort);
-//                fileSender.getFileToSend(file);
-//                Thread fileSenderThread = new Thread(fileSender);
-//                fileSenderThread.start();
                 FilePasser filePasser = new FilePasser(task, listeningPort, file);
                 Thread filePasserThread = new Thread(filePasser);
                 filePasserThread.start();
-
             }
         }
     }
 
     public static void sendMsgViaSocket(DatagramSocket socket, InetAddress bs_address, int port, String msg) {
         try {
+            System.out.println(msg);
             DatagramPacket out_packet = new DatagramPacket(msg.getBytes(), msg.getBytes().length, bs_address, port);
             socket.send(out_packet);
         } catch (Exception e) {
             //logger.log(Level.INFO, e.toString());
         }
     }
-    public HashMap<String, String> getFileData(String seekingFile) {
+    public HashMap<String, String> getFileData(String seekingFile){
         HashMap<String, String> filedata = new HashMap<>();
         System.out.println("inside");
-        //System.out.println(nodesList.get(1));
-        Node node1 = new Node(nodesList.get(1));
-        Node node2 = new Node(nodesList.get(2));
-        Node node3 = new Node(nodesList.get(3));
-        Node node4 = new Node(nodesList.get(4));
-        Node node5 = new Node(nodesList.get(5));
 
-        filedata.put(node1.nodeDetails.getUsername(), "marsland.ml-alg-perspect.09_part_0.pdf");
-        filedata.put(node2.nodeDetails.getUsername(), "marsland.ml-alg-perspect.09_part_1.pdf");
-        filedata.put(node3.nodeDetails.getUsername(), "marsland.ml-alg-perspect.09_part_2.pdf");
-        filedata.put(node4.nodeDetails.getUsername(), "marsland.ml-alg-perspect.09_part_3.pdf");
-        filedata.put(node5.nodeDetails.getUsername(), "marsland.ml-alg-perspect.09_part_4.pdf");
+        filedata.put(nodesList.get(1).getUsername(), "marsland.ml-alg-perspect.09_part_0.pdf");
+        filedata.put(nodesList.get(2).getUsername(), "marsland.ml-alg-perspect.09_part_1.pdf");
+        filedata.put(nodesList.get(3).getUsername(), "marsland.ml-alg-perspect.09_part_2.pdf");
+        filedata.put(nodesList.get(4).getUsername(), "marsland.ml-alg-perspect.09_part_3.pdf");
+        filedata.put(nodesList.get(5).getUsername(), "marsland.ml-alg-perspect.09_part_4.pdf");
 
         System.out.println("HashMap");
         return filedata;
@@ -194,6 +172,7 @@ public class Node implements Runnable {
     }
 
     public void fetchFileMsg(String seekingFile) {
+        System.out.println("sock1 " +sock);
         HashMap<String, String> filedata = getFileData(seekingFile);
         System.out.println(nodesList.size());
 
@@ -204,70 +183,5 @@ public class Node implements Runnable {
         Thread fileFetcherThread = new Thread(fileFetcher);
         fileFetcherThread.start();
 
-//        String msg;
-//        int count = 1;
-//        for (int i = 1; i < nodesList.size();i++) {
-//            String username = nodesList.get(i).getUsername();
-//            String ip = nodesList.get(i).getIp();
-//            int port = nodesList.get(i).getPort();
-//            String fileChunkName = filedata.get(username);
-//
-//            System.out.println("Inside fetchFileMsg " + username + " " + port + " --> " + fileChunkName);
-//            msg = "FETCH_REQUEST " + fileChunkName + " " + seekingFile + " " + username;
-//
-//            InetAddress bs_address = InetAddress.getByName(ip);
-//            sendMsgViaSocket(sock, bs_address, port, msg);
-//            count++;
-//        }
     }
-
-//    public void fetchFileAvailabilityMsg(String seekingFileName, String fileChunkName, String nodeUsername, DatagramPacket incoming) throws UnknownHostException {
-//        String msg = "";
-//        //String fileChunkPath = "F:\\CopyFiles\\RecievedFiles\\node_" + nodeNumber + "/" + fileChunkName;
-//        String dirPath = "F:\\CopyFiles\\RecievedFiles\\"+ nodeUsername;
-//        File dir = new File(dirPath);
-//        File[] directoryListing = dir.listFiles();
-//
-//        if (directoryListing != null) {
-//            for (File file : directoryListing) {
-//                String fileName = file.getName();
-//                System.out.println("seekin_ " +nodeUsername + "->" +fileName);
-//                System.out.println("chunk_ " +nodeUsername + "->" + fileChunkName);
-//                if (fileName.equals(fileChunkName)) {
-////                    msg = "FETCH_AVAILABLE " + seekingFileName + " " + fileChunkName + " " + nodeUsername;
-////                    InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
-////                    sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
-//                }
-//            }
-//        }
-//    }
-//
-//    public void fetchFile(String seekingFileName, String fileChunkName, String nodeUsername , DatagramPacket incoming) throws UnknownHostException {
-//
-//        int listeningPort = nodesList.get(0).getListeningPort();
-//        System.out.println(listeningPort);
-//        HashMap<String, String> filedata = getFileData(seekingFileName);
-//        int numberOfFileChunks = filedata.size();
-//        int fileIndex = getFileIndex(fileChunkName); //file order eka hoyagnna use kre.methana node nunmber eka gattata wenama file index ekak wge dila kranna ona
-//
-//        String msg = "FETCH " + listeningPort + " " + seekingFileName + " " + fileChunkName + " " + nodeUsername;
-//        InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
-//        sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
-//
-//       // File file = new File(folderPath + "/" + fileChunkName);
-//       // fetchedFiles.add(fileChunkNumber, file);
-//
-//        FileReceiver fileReceiver = new FileReceiver(listeningPort);
-//        fileReceiver.setFilepathFromSeekingFile(seekingFileName, fileChunkName, fileIndex, numberOfFileChunks);
-//        Thread fileReceiverThread = new Thread(fileReceiver);
-//        fileReceiverThread.start();
-//    }
-//
-//    public int getFileIndex(String fileChunkName) {
-//        String index = fileChunkName.substring(fileChunkName.lastIndexOf("_") + 1, fileChunkName.lastIndexOf("."));
-//        int indexNumber = Integer.parseInt(index);
-//        System.out.println("getFileIndex "+indexNumber);
-//
-//        return indexNumber;
-//    }
 }

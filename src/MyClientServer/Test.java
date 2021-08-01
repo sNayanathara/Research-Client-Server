@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class Test {
 
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) throws UnknownHostException, SocketException {
         NodeDetails nodeDetails1 = new NodeDetails("Node0", "localhost",9990, 7981);
         NodeDetails nodeDetails2 = new NodeDetails("Node1","localhost",9991, 9981);
         NodeDetails nodeDetails3 = new NodeDetails("Node2","localhost",9992, 9982);
@@ -52,14 +52,23 @@ public class Test {
         thread6.start();
         thread7.start();
 
-        //node1.addNodesToNodeList();
         //node1.fetchFile(node2, "Hi.pdf");
-       //
         //node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
        //node1.fileSendRequestMsg("F:/fileFolder/Hi.pdf");
-       // node1.fetchFileMsg("marsland.ml-alg-perspect.09.pdf");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
+        //node1.fetchFileMsg("marsland.ml-alg-perspect.09.pdf");
+        //node1.fileSendRequestMsg("F:/fileFolder/Hi.pdf");
+        //node1.fetchFile(node2, "Hi.pdf");
+        //node1.fileSendRequestMsg("F:/image.pdf");
+        node1.fetchFileMsg("image.pdf");
 
-      node1.fetchFileMsg("Hi.pdf");
+
+      //node1.fetchFileMsg("Hi.pdf");
 
     }
 }
