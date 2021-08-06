@@ -1,13 +1,34 @@
 package MyClientServer;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SplitFiles {
 
     private int chunkSizeInMB;
     private String filePath_ofFile_toSend;
+
+    public HashMap<String, SecretKey> storeKeyTemp() {
+        HashMap<String, SecretKey> keys = new HashMap<>();
+
+        return keys;
+    }
+
+    public HashMap<String, IvParameterSpec> storeIVTemp() {
+        HashMap<String, IvParameterSpec> IVs = new HashMap<>();
+
+        return IVs;
+    }
 
     public SplitFiles(int chunkSizeInMB, String filePath_ofFile_toSend) {
         this.chunkSizeInMB = chunkSizeInMB;
@@ -60,6 +81,10 @@ public class SplitFiles {
                 chunkFileName = getFileChunkName(filePath_ofFile_toSend, chunkCount);
                 File fileChunk = new File(chunkFileName);
 
+                String fileChunkNameWithoutExten = chunkFileName.substring(0,chunkFileName.lastIndexOf("."));
+                String encFileName = fileChunkNameWithoutExten + ".enc";
+                File fileChunkEnc = new File(encFileName);
+
                 if (fileSize <= (1024 * 1024 * chunkSizeInMB)) {
                     readLength = fileSize;
                 }
@@ -76,8 +101,17 @@ public class SplitFiles {
                 filePart.flush();
                 filePart.close();
 
-                files.add(fileChunk);
-                System.out.println(fileChunk);
+                String algorithm = "AES/CBC/PKCS5Padding";
+                SecretKey key = AESUtil.generateKey();
+                storeKeyTemp().put(encFileName, key);
+
+                IvParameterSpec ivParameterSpec = AESUtil.generateIv();
+                storeIVTemp().put(encFileName, ivParameterSpec);
+
+                AESUtil.encryptFile(algorithm, key, ivParameterSpec, fileChunk, fileChunkEnc);
+
+                files.add(fileChunkEnc);
+                System.out.println(fileChunkEnc);
 
 
                 //System.out.println("Sending " + fileToSend + " -> " +mybytearray.length + "bytes");
@@ -85,7 +119,17 @@ public class SplitFiles {
                 //send_splitFiles_toStore(byteChunkPart, socket, chunkFileName);
             }
             inputStream.close();
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
         }
         return files;

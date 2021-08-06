@@ -52,23 +52,18 @@ public class Test {
         thread6.start();
         thread7.start();
 
-        //node1.fetchFile(node2, "Hi.pdf");
-        //node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
-       //node1.fileSendRequestMsg("F:/fileFolder/Hi.pdf");
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
+        node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
         //node1.fetchFileMsg("marsland.ml-alg-perspect.09.pdf");
         //node1.fileSendRequestMsg("F:/fileFolder/Hi.pdf");
-        //node1.fetchFile(node2, "Hi.pdf");
+        //node1.fetchFileMsg("Hi.pdf");
         //node1.fileSendRequestMsg("F:/image.pdf");
-        node1.fetchFileMsg("image.pdf");
+        //node1.fetchFileMsg("image.pdf");
 
-
-      //node1.fetchFileMsg("Hi.pdf");
 
     }
 }

@@ -1,9 +1,17 @@
 package MyClientServer;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -101,6 +109,18 @@ public class Node implements Runnable {
             }
         } catch(IOException e) {
             System.err.println("IOException " + e);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
         }
     }
 
@@ -119,6 +139,11 @@ public class Node implements Runnable {
             sendMsgViaSocket(sock, bs_address, nodesList.get(count).getPort(), msg);
             count++;
         }
+//        String task = "SEND REQUEST";
+//        FilePasser filePasser = new FilePasser(task, filePathOfSendingFile, nodesList, sock);
+//        Thread filePasserThread = new Thread(filePasser);
+//        filePasserThread.start();
+
     }
 
     public void acceptRequestMsg(String fileToBeAccepted, int nodeNumber, DatagramPacket incoming) throws UnknownHostException {
@@ -130,16 +155,19 @@ public class Node implements Runnable {
         sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
     }
 
-    public void sendFile(String fileName, int listeningPort, DatagramPacket incoming , String nodeUsername) throws FileNotFoundException, UnknownHostException {
+    public void sendFile(String fileName, int listeningPort, DatagramPacket incoming , String nodeUsername) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
 
         String msg = "SEND " + fileName + " " + listeningPort + " " + nodeUsername;
         String task = "SEND";
 
         for (File file: fileList) {
+            int count = 0;
             String currentFileName = file.getName();
             if (currentFileName.equals(fileName)) {
+
                 InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
                 sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
+
                 FilePasser filePasser = new FilePasser(task, listeningPort, file);
                 Thread filePasserThread = new Thread(filePasser);
                 filePasserThread.start();
@@ -160,11 +188,11 @@ public class Node implements Runnable {
         HashMap<String, String> filedata = new HashMap<>();
         System.out.println("inside");
 
-        filedata.put(nodesList.get(1).getUsername(), "marsland.ml-alg-perspect.09_part_0.pdf");
-        filedata.put(nodesList.get(2).getUsername(), "marsland.ml-alg-perspect.09_part_1.pdf");
-        filedata.put(nodesList.get(3).getUsername(), "marsland.ml-alg-perspect.09_part_2.pdf");
-        filedata.put(nodesList.get(4).getUsername(), "marsland.ml-alg-perspect.09_part_3.pdf");
-        filedata.put(nodesList.get(5).getUsername(), "marsland.ml-alg-perspect.09_part_4.pdf");
+        filedata.put(nodesList.get(1).getUsername(), "marsland.ml-alg-perspect.09_part_0.enc");
+        filedata.put(nodesList.get(2).getUsername(), "marsland.ml-alg-perspect.09_part_1.enc");
+        filedata.put(nodesList.get(3).getUsername(), "marsland.ml-alg-perspect.09_part_2.enc");
+        filedata.put(nodesList.get(4).getUsername(), "marsland.ml-alg-perspect.09_part_3.enc");
+        filedata.put(nodesList.get(5).getUsername(), "marsland.ml-alg-perspect.09_part_4.enc");
 
         System.out.println("HashMap");
         return filedata;
@@ -174,14 +202,16 @@ public class Node implements Runnable {
     public void fetchFileMsg(String seekingFile) {
         System.out.println("sock1 " +sock);
         HashMap<String, String> filedata = getFileData(seekingFile);
+//        HashMap<String, SecretKey> keys = storeKeyTemp();
+//        HashMap<String, IvParameterSpec> ivs = storeIVTemp();
         System.out.println(nodesList.size());
 
         int listeningPort = nodesList.get(0).getListeningPort();
         String task = "FETCH";
 
-        FileFetcher fileFetcher = new FileFetcher(task, listeningPort, nodesList, filedata, seekingFile, sock);
-        Thread fileFetcherThread = new Thread(fileFetcher);
-        fileFetcherThread.start();
+        //FileFetcher fileFetcher = new FileFetcher(task, listeningPort, nodesList, filedata, keys, ivs, seekingFile, sock);
+        //Thread fileFetcherThread = new Thread(fileFetcher);
+        //fileFetcherThread.start();
 
     }
 }
