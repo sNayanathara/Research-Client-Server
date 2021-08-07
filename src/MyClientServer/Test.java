@@ -58,7 +58,7 @@ public class Test {
             e.printStackTrace();
         }
         node1.fileSendRequestMsg("F:/fileFolder/marsland.ml-alg-perspect.09.pdf");
-        //node1.fetchFileMsg("marsland.ml-alg-perspect.09.pdf");
+        node1.fetchFileMsg("marsland.ml-alg-perspect.09.pdf");
         //node1.fileSendRequestMsg("F:/fileFolder/Hi.pdf");
         //node1.fetchFileMsg("Hi.pdf");
         //node1.fileSendRequestMsg("F:/image.pdf");

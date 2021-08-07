@@ -17,18 +17,8 @@ public class SplitFiles {
 
     private int chunkSizeInMB;
     private String filePath_ofFile_toSend;
-
-    public HashMap<String, SecretKey> storeKeyTemp() {
-        HashMap<String, SecretKey> keys = new HashMap<>();
-
-        return keys;
-    }
-
-    public HashMap<String, IvParameterSpec> storeIVTemp() {
-        HashMap<String, IvParameterSpec> IVs = new HashMap<>();
-
-        return IVs;
-    }
+    public static HashMap<String, SecretKey> keys = new HashMap<>();
+    public static HashMap<String, IvParameterSpec> IVs = new HashMap<>();
 
     public SplitFiles(int chunkSizeInMB, String filePath_ofFile_toSend) {
         this.chunkSizeInMB = chunkSizeInMB;
@@ -72,6 +62,8 @@ public class SplitFiles {
         byte[] byteChunkPart;
         String chunkFileName;
         FileInputStream inputStream;
+        System.out.println("keys" + keys);
+        System.out.println("IVs" + IVs);
 
         File inputFile = new File(filePath_ofFile_toSend);
 
@@ -103,10 +95,13 @@ public class SplitFiles {
 
                 String algorithm = "AES/CBC/PKCS5Padding";
                 SecretKey key = AESUtil.generateKey();
-                storeKeyTemp().put(encFileName, key);
+                System.out.println(key);
+                keys.put(encFileName, key);
+                System.out.println("HAsh: " +keys);
 
                 IvParameterSpec ivParameterSpec = AESUtil.generateIv();
-                storeIVTemp().put(encFileName, ivParameterSpec);
+                System.out.println(ivParameterSpec);
+                IVs.put(encFileName, ivParameterSpec);
 
                 AESUtil.encryptFile(algorithm, key, ivParameterSpec, fileChunk, fileChunkEnc);
 

@@ -124,7 +124,6 @@ public class Node implements Runnable {
         }
     }
 
-
     public void fileSendRequestMsg(String filePathOfSendingFile) throws UnknownHostException {
         SplitFiles fileSpliter = new SplitFiles(10,filePathOfSendingFile);
         fileList = fileSpliter.splitFile(filePathOfSendingFile);
@@ -139,10 +138,6 @@ public class Node implements Runnable {
             sendMsgViaSocket(sock, bs_address, nodesList.get(count).getPort(), msg);
             count++;
         }
-//        String task = "SEND REQUEST";
-//        FilePasser filePasser = new FilePasser(task, filePathOfSendingFile, nodesList, sock);
-//        Thread filePasserThread = new Thread(filePasser);
-//        filePasserThread.start();
 
     }
 
@@ -202,16 +197,18 @@ public class Node implements Runnable {
     public void fetchFileMsg(String seekingFile) {
         System.out.println("sock1 " +sock);
         HashMap<String, String> filedata = getFileData(seekingFile);
-//        HashMap<String, SecretKey> keys = storeKeyTemp();
-//        HashMap<String, IvParameterSpec> ivs = storeIVTemp();
+        HashMap<String, SecretKey> keys = SplitFiles.keys;
+        HashMap<String, IvParameterSpec> ivs = SplitFiles.IVs;
+        System.out.println(keys);
+        System.out.println(ivs);
         System.out.println(nodesList.size());
 
         int listeningPort = nodesList.get(0).getListeningPort();
         String task = "FETCH";
 
-        //FileFetcher fileFetcher = new FileFetcher(task, listeningPort, nodesList, filedata, keys, ivs, seekingFile, sock);
-        //Thread fileFetcherThread = new Thread(fileFetcher);
-        //fileFetcherThread.start();
+        FileFetcher fileFetcher = new FileFetcher(task, listeningPort, nodesList, filedata, keys, ivs, seekingFile, sock);
+        Thread fileFetcherThread = new Thread(fileFetcher);
+        fileFetcherThread.start();
 
     }
 }
