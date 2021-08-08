@@ -23,7 +23,8 @@ public class Node implements Runnable {
 
     private NodeDetails nodeDetails;
     private ArrayList<NodeDetails> nodesList = new ArrayList<>();
-    private List<File> fileList;
+//    private List<File> fileList;
+    private String path;
 
     public Node(NodeDetails nodeDetails) throws SocketException {
         this.nodeDetails = nodeDetails;
@@ -90,21 +91,14 @@ public class Node implements Runnable {
                     System.out.println(command);
                     System.out.println(fileToBeSend + " " + listeningPort);
 
-                    sendFile(fileToBeSend, listeningPort, incoming, nodeUsername);
+                   String task = "SEND";
 
-                } else if (command.equals("SEND")) {
-                    String sendingFileName = st.nextToken();
-                    int senderPort = Integer.parseInt(st.nextToken());
-                    String nodeUsername = st.nextToken();
+                   FileFetcher fileFetcher = new FileFetcher(task, listeningPort, fileToBeSend, nodeUsername);
+                   Thread fileFetcherThread = new Thread(fileFetcher);
+                   fileFetcherThread.start();
 
-                    String task = "SEND";
-//                    logger.log(Level.INFO, reqFilename + " " + receiverPort);
-                    System.out.println(command);
-                    System.out.println(sendingFileName + " " + senderPort);
+                   sendFile(fileToBeSend, listeningPort, incoming, nodeUsername);
 
-                    FileFetcher fileFetcher = new FileFetcher(task, senderPort, sendingFileName, nodeUsername);
-                    Thread fileFetcherThread = new Thread(fileFetcher);
-                    fileFetcherThread.start();
                 }
             }
         } catch(IOException e) {
@@ -125,19 +119,9 @@ public class Node implements Runnable {
     }
 
     public void fileSendRequestMsg(String filePathOfSendingFile) throws UnknownHostException {
-        SplitFiles fileSpliter = new SplitFiles(10,filePathOfSendingFile);
-        fileList = fileSpliter.splitFile(filePathOfSendingFile);
-
-        String msg;
-        int count = 1;
-        for(File file: fileList) {
-            String fileNameofChunk = file.getName();
-            String nodeUsername = nodesList.get(count).getUsername();
-            msg = "SEND_REQUEST " + fileNameofChunk + " " + count;
-            InetAddress bs_address = InetAddress.getByName(nodesList.get(count).getIp());
-            sendMsgViaSocket(sock, bs_address, nodesList.get(count).getPort(), msg);
-            count++;
-        }
+        String task = "FILE_SEND_REQUEST";
+        FilePasser filePasser = new FilePasser(task, filePathOfSendingFile, nodesList, sock);
+        filePasser.passFileSendRequestMsg();
 
     }
 
@@ -152,22 +136,13 @@ public class Node implements Runnable {
 
     public void sendFile(String fileName, int listeningPort, DatagramPacket incoming , String nodeUsername) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
 
-        String msg = "SEND " + fileName + " " + listeningPort + " " + nodeUsername;
         String task = "SEND";
+        System.out.println("Send File*******************");
 
-        for (File file: fileList) {
-            int count = 0;
-            String currentFileName = file.getName();
-            if (currentFileName.equals(fileName)) {
+        FilePasser filePasser = new FilePasser(task, fileName, listeningPort, incoming, nodeUsername);
+        Thread filePasserThread = new Thread(filePasser);
+        filePasserThread.start();
 
-                InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
-                sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
-
-                FilePasser filePasser = new FilePasser(task, listeningPort, file);
-                Thread filePasserThread = new Thread(filePasser);
-                filePasserThread.start();
-            }
-        }
     }
 
     public static void sendMsgViaSocket(DatagramSocket socket, InetAddress bs_address, int port, String msg) {

@@ -97,21 +97,18 @@ public class SplitFiles {
                 SecretKey key = AESUtil.generateKey();
                 System.out.println(key);
                 keys.put(encFileName, key);
-                System.out.println("HAsh: " +keys);
+               //System.out.println("HAsh: " +keys);
 
                 IvParameterSpec ivParameterSpec = AESUtil.generateIv();
                 System.out.println(ivParameterSpec);
                 IVs.put(encFileName, ivParameterSpec);
 
+                System.out.println("Check Enc Keys : " +encFileName + " " + key + " " + ivParameterSpec);
+
                 AESUtil.encryptFile(algorithm, key, ivParameterSpec, fileChunk, fileChunkEnc);
 
                 files.add(fileChunkEnc);
                 System.out.println(fileChunkEnc);
-
-
-                //System.out.println("Sending " + fileToSend + " -> " +mybytearray.length + "bytes");
-
-                //send_splitFiles_toStore(byteChunkPart, socket, chunkFileName);
             }
             inputStream.close();
         } catch (IOException | NoSuchAlgorithmException e) {

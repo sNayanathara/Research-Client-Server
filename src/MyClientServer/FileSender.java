@@ -1,6 +1,7 @@
 package MyClientServer;
 
 import java.io.*;
+import java.net.DatagramPacket;
 import java.net.Socket;
 import java.util.List;
 import java.util.logging.Logger;
@@ -9,6 +10,7 @@ import java.util.logging.Logger;
 public class FileSender {
 
     FileInputStream fileToSend;
+
     //private Logger logger = Logger.getLogger(FileSender.class.getName());
 
     public void fetch_and_SendFile(Socket socket) throws IOException {

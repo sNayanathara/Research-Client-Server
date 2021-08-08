@@ -49,12 +49,14 @@ public class FileReceiver {
         SecretKey key = keys.get(fileChunk);
         IvParameterSpec ivParameterSpec = ivs.get(fileChunk);
 
+        System.out.println("Check Dec Keys : " +fileChunk + " " + key + " " + ivParameterSpec);
 
-        //int bytesRead;
 
-        InputStream in=sss.getInputStream();     //socket closed..
-        //out=new FileOutputStream(filepath);
- //       byte[] buffer=new byte[1024];
+      // int bytesRead;
+//
+       InputStream in=sss.getInputStream();     //socket closed..
+       // out=new FileOutputStream(filepath);
+//        byte[] buffer=new byte[1024];
 //        while((bytesRead=in.read(buffer))!=-1)
 //        {
 //            out.write(buffer,0,bytesRead);
