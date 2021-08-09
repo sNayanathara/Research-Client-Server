@@ -5,8 +5,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
 import java.security.InvalidAlgorithmParameterException;
@@ -23,8 +21,6 @@ public class Node implements Runnable {
 
     private NodeDetails nodeDetails;
     private ArrayList<NodeDetails> nodesList = new ArrayList<>();
-//    private List<File> fileList;
-    private String path;
 
     public Node(NodeDetails nodeDetails) throws SocketException {
         this.nodeDetails = nodeDetails;
@@ -47,7 +43,6 @@ public class Node implements Runnable {
     }
     public void run() {
         try {
-            System.out.println("sock0 " +sock);
 
             while(true) {
                 byte[] buffer = new byte[65536];
@@ -79,7 +74,7 @@ public class Node implements Runnable {
                     int nodeNumber = Integer.parseInt(st.nextToken());
 
                     System.out.println(command);
-                    System.out.println(fileToBeAccepted + " " + nodeNumber);
+                    System.out.println("Accept" + fileToBeAccepted + " " + nodeNumber);
 
                     acceptRequestMsg(fileToBeAccepted, nodeNumber, incoming);
 
@@ -89,31 +84,13 @@ public class Node implements Runnable {
                     String nodeUsername = st.nextToken();
 
                     System.out.println(command);
-                    System.out.println(fileToBeSend + " " + listeningPort);
-
-                   String task = "SEND";
-
-                   FileFetcher fileFetcher = new FileFetcher(task, listeningPort, fileToBeSend, nodeUsername);
-                   Thread fileFetcherThread = new Thread(fileFetcher);
-                   fileFetcherThread.start();
+                    System.out.println("Sending" + fileToBeSend + " " + listeningPort);
 
                    sendFile(fileToBeSend, listeningPort, incoming, nodeUsername);
 
                 }
             }
         } catch(IOException e) {
-            System.err.println("IOException " + e);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
         }
     }
@@ -128,16 +105,22 @@ public class Node implements Runnable {
     public void acceptRequestMsg(String fileToBeAccepted, int nodeNumber, DatagramPacket incoming) throws UnknownHostException {
 
         String nodeUsername = nodesList.get(nodeNumber).getUsername();
+        int listeningPort = nodesList.get(nodeNumber).getListeningPort();
+        String task = "RECEIVE_SEND";
 
-        String msg = "OK_SEND " + fileToBeAccepted + " " + nodesList.get(nodeNumber).getListeningPort() + " " + nodeUsername;
+        String msg = "OK_SEND " + fileToBeAccepted + " " + listeningPort + " " + nodeUsername;
+
+        FileFetcher fileFetcher = new FileFetcher(task, listeningPort, fileToBeAccepted, nodeUsername);
+        Thread fileFetcherThread = new Thread(fileFetcher);
+        fileFetcherThread.start();
+
         InetAddress bs_address = InetAddress.getByName(incoming.getAddress().getHostAddress());
         sendMsgViaSocket(sock, bs_address, incoming.getPort(), msg);
     }
 
-    public void sendFile(String fileName, int listeningPort, DatagramPacket incoming , String nodeUsername) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
+    public void sendFile(String fileName, int listeningPort, DatagramPacket incoming , String nodeUsername) {
 
         String task = "SEND";
-        System.out.println("Send File*******************");
 
         FilePasser filePasser = new FilePasser(task, fileName, listeningPort, incoming, nodeUsername);
         Thread filePasserThread = new Thread(filePasser);

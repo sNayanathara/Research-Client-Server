@@ -66,7 +66,6 @@ public class AESUtil {
         }
         inputStream.close();
         outputStream.close();
-        System.out.println("Finished enc" + inputFile.getName());
     }
 
     public static void decryptFile(String algorithm, SecretKey key, IvParameterSpec iv,
@@ -77,7 +76,7 @@ public class AESUtil {
         cipher.init(Cipher.DECRYPT_MODE, key, iv);
         //FileInputStream inputStream = new FileInputStream(encryptedFile);
         //FileOutputStream outputStream = new FileOutputStream(decryptedFile);
-        byte[] buffer = new byte[64];
+        byte[] buffer = new byte[4096];
         int bytesRead;
         while ((bytesRead = inputStream.read(buffer)) != -1) {
             byte[] output = cipher.update(buffer, 0, bytesRead);

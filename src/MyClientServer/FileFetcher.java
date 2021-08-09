@@ -59,7 +59,6 @@ public class FileFetcher implements Runnable {
     }
 
     private void sendFileChunksToNodes(ServerSocket socket) throws IOException {
-        System.out.println("sendFileChunksToNodes");
         FileReceiver fileReceiver = new FileReceiver();
         fileReceiver.setFilepathFromName(sendingFileName, nodeUsername );
         fileReceiver.getFile(socket);
@@ -79,9 +78,6 @@ public class FileFetcher implements Runnable {
 
 
     public void sendFetchRequestToNodes(ServerSocket socket) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        System.out.println("Open");
-        System.out.println("Nodelist size " +nodesList.size());
-        System.out.println("sock2 " +sock);
 
         String fileOutPath = setFilepathFromSeekingFile(seekingFile);
         OutputStream outputFile = new FileOutputStream(fileOutPath);
@@ -90,12 +86,6 @@ public class FileFetcher implements Runnable {
             String nodeUsername = nodesList.get(i).getUsername();
             int nodePort = nodesList.get(i).getPort();
             String nodeIP = nodesList.get(i).getIp();
-
-            System.out.println(nodeUsername);
-            System.out.println(nodePort);
-            System.out.println(nodeIP);
-
-            System.out.println(port);
 
             String fileChunk = filedata.get(nodeUsername);
             String msg = "FETCH " + port + " " + fileChunk + " " + seekingFile + " " + nodeUsername;
@@ -119,17 +109,7 @@ public class FileFetcher implements Runnable {
             selectTask(socket);
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
 

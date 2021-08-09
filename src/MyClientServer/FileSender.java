@@ -17,7 +17,6 @@ public class FileSender {
         OutputStream os = null;
         FileInputStream fileInputStream = fileToSend;
         try {
-            System.out.println("Inside sender");
             os = socket.getOutputStream();
             int bytesRead;
             byte[] buffer = new byte[4096];

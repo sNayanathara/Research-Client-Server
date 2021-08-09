@@ -62,8 +62,6 @@ public class SplitFiles {
         byte[] byteChunkPart;
         String chunkFileName;
         FileInputStream inputStream;
-        System.out.println("keys" + keys);
-        System.out.println("IVs" + IVs);
 
         File inputFile = new File(filePath_ofFile_toSend);
 
@@ -71,11 +69,11 @@ public class SplitFiles {
             inputStream = new FileInputStream(inputFile);
             while (fileSize > 0) {
                 chunkFileName = getFileChunkName(filePath_ofFile_toSend, chunkCount);
-                File fileChunk = new File(chunkFileName);
+                File fileChunk = new File("temp/" + chunkFileName);
 
                 String fileChunkNameWithoutExten = chunkFileName.substring(0,chunkFileName.lastIndexOf("."));
                 String encFileName = fileChunkNameWithoutExten + ".enc";
-                File fileChunkEnc = new File(encFileName);
+                File fileChunkEnc = new File("temp/"+encFileName);
 
                 if (fileSize <= (1024 * 1024 * chunkSizeInMB)) {
                     readLength = fileSize;
@@ -94,34 +92,21 @@ public class SplitFiles {
                 filePart.close();
 
                 String algorithm = "AES/CBC/PKCS5Padding";
+
                 SecretKey key = AESUtil.generateKey();
-                System.out.println(key);
                 keys.put(encFileName, key);
-               //System.out.println("HAsh: " +keys);
 
                 IvParameterSpec ivParameterSpec = AESUtil.generateIv();
-                System.out.println(ivParameterSpec);
                 IVs.put(encFileName, ivParameterSpec);
 
-                System.out.println("Check Enc Keys : " +encFileName + " " + key + " " + ivParameterSpec);
+//                System.out.println("Check Enc Keys : " +encFileName + " " + key + " " + ivParameterSpec);
 
                 AESUtil.encryptFile(algorithm, key, ivParameterSpec, fileChunk, fileChunkEnc);
 
                 files.add(fileChunkEnc);
-                System.out.println(fileChunkEnc);
             }
             inputStream.close();
-        } catch (IOException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
         return files;
