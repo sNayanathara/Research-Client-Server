@@ -83,8 +83,18 @@ public class FilePasser implements Runnable {
             }
         }
 
+        emptyDirectory("temp/");
+
     }
 
+    public void emptyDirectory(String filePath)  //to empty the temp folder
+    {
+        File directory = new File(filePath);
+        for (File files : directory.listFiles()) {
+            if (!files.isDirectory())
+                files.delete();
+        }
+    }
     public void passFilesForSendRequest(Socket socket, File file) throws IOException {
         FileSender fileSender = new FileSender();
         fileSender.getFileToSend(file);
