@@ -69,11 +69,13 @@ public class SplitFiles {
             inputStream = new FileInputStream(inputFile);
             while (fileSize > 0) {
                 chunkFileName = getFileChunkName(filePath_ofFile_toSend, chunkCount);
-                File fileChunk = new File("temp/" + chunkFileName);
+//                File fileChunk = new File("temp/" + chunkFileName);
+                File fileChunk = new File(FilePathsUtil.getTempFolder() + chunkFileName);
 
                 String fileChunkNameWithoutExten = chunkFileName.substring(0,chunkFileName.lastIndexOf("."));
                 String encFileName = fileChunkNameWithoutExten + ".enc";
-                File fileChunkEnc = new File("temp/"+encFileName);
+                //File fileChunkEnc = new File("temp/" + encFileName);
+                File fileChunkEnc = new File(FilePathsUtil.getTempFolder() + encFileName);
 
                 if (fileSize <= (1024 * 1024 * chunkSizeInMB)) {
                     readLength = fileSize;

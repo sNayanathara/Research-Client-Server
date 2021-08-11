@@ -63,7 +63,8 @@ public class Node implements Runnable {
                    String nodeUsername = st.nextToken();
                    String task = "FETCH";
 
-                   String fileChunkPath = "F:\\CopyFiles\\RecievedFiles\\" + nodeUsername + "\\" + fileChunkName;
+//                   String fileChunkPath = "F:\\CopyFiles\\RecievedFiles\\" + nodeUsername + "\\" + fileChunkName;
+                   String fileChunkPath = FilePathsUtil.getSystemReceivedFiles() + nodeUsername + "\\" + fileChunkName;
 
                    FilePasser filePasser = new FilePasser(task, receiverListeningPort, fileChunkPath);
                    Thread filePasserThread = new Thread(filePasser);

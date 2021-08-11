@@ -83,7 +83,8 @@ public class FilePasser implements Runnable {
             }
         }
 
-        emptyDirectory("temp/");
+        //emptyDirectory("temp/");
+        emptyDirectory(FilePathsUtil.getTempFolder());
 
     }
 

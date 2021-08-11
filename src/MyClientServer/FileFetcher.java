@@ -66,7 +66,8 @@ public class FileFetcher implements Runnable {
 
     public String setFilepathFromSeekingFile(String fileName) {
 
-        String dir = "F:\\CopyFiles\\";
+//        String dir = "F:\\CopyFiles\\";
+        String dir = FilePathsUtil.getFetchedFile();
         String filepath;
 
         filepath = dir + fileName;

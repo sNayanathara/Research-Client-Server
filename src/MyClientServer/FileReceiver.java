@@ -68,7 +68,8 @@ public class FileReceiver {
 
 
     public String setFilepathFromName(String filename, String nodeUserName) {
-        String dir = "F:\\CopyFiles\\RecievedFiles\\";
+//        String dir = "F:\\CopyFiles\\RecievedFiles\\";
+        String dir = FilePathsUtil.getSystemReceivedFiles();
         String folderName = nodeUserName;
         String folder = dir + folderName;
         File directory = new File(folder);
