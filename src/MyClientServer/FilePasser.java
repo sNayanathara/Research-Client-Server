@@ -1,5 +1,7 @@
 package MyClientServer;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -10,7 +12,9 @@ public class FilePasser implements Runnable {
     String nodeUsername;
     String fileName;
     String task;
+    String ip;
     int port;
+    int listeningPort;
     String fileChunkPath;
     ArrayList<NodeDetails> nodesList;
     String filePathOfSendingFile;
@@ -19,15 +23,17 @@ public class FilePasser implements Runnable {
     DatagramPacket incoming;
 
 
-    public FilePasser(String task, int fetcherListeningPort, String fileChunkPath) {
+    public FilePasser(String task, String ip, int fetcherListeningPort, String fileChunkPath) {
         this.task = task;
+        this.ip = ip;
         this.port = fetcherListeningPort;
         this.fileChunkPath = fileChunkPath;
     }
 
-    public FilePasser(String task, String fileName, int listeningPort, DatagramPacket incoming, String nodeUsername) {
+    public FilePasser(String task, String fileName, String ip, int listeningPort, DatagramPacket incoming, String nodeUsername) {
         this.task = task;
         this.fileName = fileName;
+        this.ip = ip;
         this.port = listeningPort;
         this.incoming = incoming;
         this.nodeUsername = nodeUsername;
@@ -39,15 +45,14 @@ public class FilePasser implements Runnable {
         this.nodesList = nodesList;
         this.sock = sock;
 
-        SplitFiles fileSpliter = new SplitFiles(10, filePathOfSendingFile);
+        SplitFiles fileSpliter = new SplitFiles(50, filePathOfSendingFile);
         fileList = fileSpliter.splitFile(filePathOfSendingFile);
     }
-
 
     public void setTask(Socket socket) throws IOException {
         if (task.equals("FETCH")) {
             sendFilesForFetchRequest(socket);
-        } else {
+        }  else {
             sendFileToNodes(socket);
         }
     }
@@ -62,10 +67,10 @@ public class FilePasser implements Runnable {
     public void passFileSendRequestMsg() throws UnknownHostException {
 
         String msg;
-        int count = 1;
+        int count = 0;  //initially count = 1
         for (File file : fileList) {
             String fileNameofChunk = file.getName();
-            String nodeUsername = nodesList.get(count).getUsername();
+            //String nodeUsername = nodesList.get(count).getUsername();
             msg = "SEND_REQUEST " + fileNameofChunk + " " + count;
             InetAddress bs_address = InetAddress.getByName(nodesList.get(count).getIp());
             Node.sendMsgViaSocket(sock, bs_address, nodesList.get(count).getPort(), msg);
@@ -84,7 +89,7 @@ public class FilePasser implements Runnable {
         }
 
         //emptyDirectory("temp/");
-        emptyDirectory(FilePathsUtil.getTempFolder());
+        emptyDirectory(FilePathsUtil.TEMP_FOLDER);
 
     }
 
@@ -104,12 +109,21 @@ public class FilePasser implements Runnable {
 
     @Override
     public void run() {
-        try (Socket socket = new Socket("localhost", port)) {
+        try (Socket socket = new Socket(ip, port)) {
             setTask(socket);
         } catch (Exception e) {
             e.printStackTrace();
         }
+//        SSLSocketFactory sslsocketfactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+//        try {
+//            SSLSocket sslsocket = (SSLSocket)sslsocketfactory.createSocket("localhost", port);
+//            setTask(sslsocket);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
+
+
 
 }
 

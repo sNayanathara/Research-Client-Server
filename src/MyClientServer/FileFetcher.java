@@ -5,6 +5,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,6 +22,7 @@ import java.util.HashMap;
 public class FileFetcher implements Runnable {
 
     String task;
+    String ip;
     int port;
     ArrayList<NodeDetails> nodesList;
     HashMap<String, String> filedata;
@@ -30,8 +33,9 @@ public class FileFetcher implements Runnable {
     String sendingFileName;
     String nodeUsername;
 
-    public FileFetcher(String task, int port, ArrayList<NodeDetails> nodesList, HashMap<String, String> filedata, HashMap<String, SecretKey> keys, HashMap<String, IvParameterSpec> ivs, String seekingFile, DatagramSocket sock) {
+    public FileFetcher(String task, String ip, int port, ArrayList<NodeDetails> nodesList, HashMap<String, String> filedata, HashMap<String, SecretKey> keys, HashMap<String, IvParameterSpec> ivs, String seekingFile, DatagramSocket sock) {
         this.task = task;
+        this.ip = ip;
         this.port = port;
         this.nodesList = nodesList;
         this.filedata = filedata;
@@ -48,26 +52,26 @@ public class FileFetcher implements Runnable {
         this.nodeUsername = nodeUsername;
     }
 
-    public void selectTask(ServerSocket socket) throws IOException, NoSuchPaddingException, InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+    public void selectTask(ServerSocket serverSocket) throws IOException, NoSuchPaddingException, InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
 
         if (task.equals("FETCH")) {
-            sendFetchRequestToNodes(socket);
+            sendFetchRequestToNodes(serverSocket);
         } else {
-            sendFileChunksToNodes(socket);
+            sendFileChunksToNodes(serverSocket);
         }
 
     }
 
-    private void sendFileChunksToNodes(ServerSocket socket) throws IOException {
+    private void sendFileChunksToNodes(ServerSocket serverSocket) throws IOException {
         FileReceiver fileReceiver = new FileReceiver();
         fileReceiver.setFilepathFromName(sendingFileName, nodeUsername );
-        fileReceiver.getFile(socket);
+        fileReceiver.getFile(serverSocket);
     }
 
     public String setFilepathFromSeekingFile(String fileName) {
 
 //        String dir = "F:\\CopyFiles\\";
-        String dir = FilePathsUtil.getFetchedFile();
+        String dir = FilePathsUtil.FETCHED_FILE;
         String filepath;
 
         filepath = dir + fileName;
@@ -78,25 +82,25 @@ public class FileFetcher implements Runnable {
     }
 
 
-    public void sendFetchRequestToNodes(ServerSocket socket) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    public void sendFetchRequestToNodes(ServerSocket serverSocket) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 
         String fileOutPath = setFilepathFromSeekingFile(seekingFile);
         OutputStream outputFile = new FileOutputStream(fileOutPath);
 
-        for (int i = 1; i< nodesList.size(); i++) {
+        for (int i = 0; i< nodesList.size(); i++) {
             String nodeUsername = nodesList.get(i).getUsername();
             int nodePort = nodesList.get(i).getPort();
             String nodeIP = nodesList.get(i).getIp();
 
             String fileChunk = filedata.get(nodeUsername);
-            String msg = "FETCH " + port + " " + fileChunk + " " + seekingFile + " " + nodeUsername;
+            String msg = "FETCH " + ip + " " + port + " " + fileChunk + " " + seekingFile + " " + nodeUsername;
 
             InetAddress bs_address = InetAddress.getByName(nodeIP);
             Node.sendMsgViaSocket(sock, bs_address, nodePort, msg);
 
             FileReceiver fileReceiver = new FileReceiver();
             //fileReceiver.setFilepathFromSeekingFile(seekingFile);
-            fileReceiver.getFileToMerge(socket, fileChunk, keys, ivs, outputFile);
+            fileReceiver.getFileToMerge(serverSocket, fileChunk, keys, ivs, outputFile);
 
             // socket.close();
         }
@@ -107,6 +111,8 @@ public class FileFetcher implements Runnable {
     public void run() {
         try {
             ServerSocket socket = new ServerSocket(port);
+//            SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
+//            SSLServerSocket sslserversocket = (SSLServerSocket)sslserversocketfactory.createServerSocket(port);
             selectTask(socket);
         } catch (IOException e) {
             e.printStackTrace();

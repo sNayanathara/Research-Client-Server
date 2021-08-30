@@ -1,5 +1,6 @@
 package MyClientServer;
 
+import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.Socket;
